@@ -11,6 +11,8 @@ var favicon = require('serve-favicon')
 ,	bodyParser = require('body-parser')
 ,	errorHandler = require('errorhandler');
 
+var https = require("https");
+var fs = require("fs");
 var app = express();
 
 // all environments
@@ -24,6 +26,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(methodOverride());
 app.use(express.static(path.join(__dirname, 'public')));
 
+const httpsOption = {
+  key : fs.readFileSync("private.pem"),
+  cert: fs.readFileSync("csr.crt")
+}
+
 // development only
 if ('development' == app.get('env')) {
   app.use(errorHandler());
@@ -32,7 +39,8 @@ if ('development' == app.get('env')) {
 // routing
 require('./app/routes.js')(app, streams);
 
-var server = app.listen(app.get('port'), function(){
+//var server = app.listen(app.get('port'), function(){
+var server = https.createServer(httpsOption, app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
 });
 
